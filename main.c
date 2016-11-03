@@ -11,6 +11,8 @@
 // * When sdjusting POT1, the voltage of PTB3 varies from 0 volts to 3.3 volts.
 // * The value of this voltage is used to control the tri-color LEDs. 
 // * When the potentiometer is turned, the LEDs colour changes.
+// * At the same time, the result of the each A/D conversionn is also sent to 
+// * the PC and through the UART0 and displayed at the PC's terminal windows.
 // *
 // * Copyright:   (C) 2016 Northumbria University, Newcastle upon Tyne, UK.
 // *
@@ -32,7 +34,7 @@
 
 #include "MKL25Z4.h"
 #include "LEDDriver.h"
-
+#include "UART0_TxRx.h"
 
 void ADC0_init(void);
 short int readADC(short ChID);
@@ -42,12 +44,19 @@ int main (void)
 {
     short int adcPOT1;  // POT one
     
+	  char buf [100];   // UART buffer 
+    int n;            // number of characters in buf to be sent
+	
     LED_init();                     /* Configure LEDs */
     ADC0_init();                    /* Configure ADC0 */
-    
+    UART0_init();  // Initialized UART0, 57600 baud
+	
+		sendHelloWorld();
 	  while (1) {
 				adcPOT1=readADC(13);
-				LED_set(adcPOT1); /* display the voltage range on LED */
+			  LED_set(adcPOT1); /* display the voltage range on LED */
+			  n = sprintf(buf, "%d\r\n", adcPOT1); // convert integer value into ASCII
+			  sendStr(buf, n);
     }
 }
 
